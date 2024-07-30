@@ -25,6 +25,8 @@ from typing import Any
 
 import dictdiffer
 
+from config import Config
+from sendmail import SendMail
 from tmdb import TMDB
 
 
@@ -46,6 +48,7 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
 
     def __init__(self) -> None:
         self._tmdb: TMDB | None = None
+        self._sendmail: SendMail | None = None
 
     @staticmethod
     def _format_movie_change(movie_old: dict[Any, Any], movie_new: dict[Any, Any]) -> tuple[bool, str, str]:
@@ -112,8 +115,43 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
 
         return movie_info
 
+    def _check_movie(self, movie_id: int, config: Config, email_to: list[str]) -> None:
+        print(f"Checking movie {movie_id}... ", end='', flush=True)
+
+        movie_info_cached = config.get_cached_movie(movie_id)
+        movie_info = self._get_movie_info(movie_id)
+
+        changed, subject, body = self._format_movie_change(movie_info_cached, movie_info)
+
+        if changed:
+            print("change")
+            assert self._sendmail is not None
+            for address in email_to:
+                self._sendmail.send(address, subject, body)
+        else:
+            print("no change")
+
+        config.put_cached_movie(movie_id, movie_info)
+
     def run(self) -> int:
         """! Run the main logic.
         """
+
+        config = Config()
+
+        program_config = config.get_program_config()
+
+        if not program_config["tmdb"]:
+            print(f"No TMDB API key in config file \"{config.get_program_config_path()}\"")
+            return 1
+
+        if not program_config["movies"]:
+            print("Nothing to do.")
+
+        self._sendmail = SendMail(program_config["sendmail"], program_config["email_from"])
+        self._tmdb = TMDB(program_config["tmdb"])
+
+        for movie in program_config["movies"]:
+            self._check_movie(movie, config, program_config["email_to"])
 
         return 0
