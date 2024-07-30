@@ -67,3 +67,31 @@ class TMDB:  # pylint: disable=too-few-public-methods
                 raise RuntimeError("Response yielded no success")
         except (requests.exceptions.HTTPError, RuntimeError) as error:
             raise RuntimeError(f"Failed to authenticate with TMDB: {error}") from error
+
+    def get_movie(self, movie_id: int, with_releases: bool = True, language: str | None = None) -> dict[Any, Any]:
+        """! Query TMDB for details about a movie.
+
+        @param movie_id       ID of the movie on TMDB.
+        @param with_releases  Add information about releases of the movie.
+        @param language       For which language to query.
+
+        @return A dict with details about the movie.
+        """
+
+        try:
+            query_params: dict[Any, Any] | None = {}
+
+            assert query_params is not None
+            if language is not None:
+                query_params["language"] = language
+            if with_releases:
+                query_params["append_to_response"] = "release_dates"
+
+            if not query_params:
+                query_params = None
+
+            response = self._query("movie", path_params=[str(movie_id)], query_params=query_params)
+            return response
+
+        except requests.exceptions.HTTPError as error:
+            raise RuntimeError(f"Failed to get movie: {error}") from error
