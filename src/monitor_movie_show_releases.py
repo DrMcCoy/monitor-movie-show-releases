@@ -164,6 +164,8 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
         movie_info_cached = config.get_cached_movie(movie_id)
         movie_info = self._get_movie_info(movie_id)
 
+        print(f'"{movie_info["title"]}"... ', end='', flush=True)
+
         changed, subject, body = self._format_movie_change(movie_info_cached, movie_info)
 
         if changed:
@@ -181,6 +183,8 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
 
         show_info_cached = config.get_cached_show(show_id)
         show_info = self._get_show_info(show_id)
+
+        print(f'"{show_info["title"]}"... ', end='', flush=True)
 
         changed, subject, body = self._format_show_change(show_info_cached, show_info)
 
@@ -218,6 +222,7 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
                 time.sleep(2)
                 print("done")
 
+            print(f'{n + 1}/{len(program_config["movies"])}: ', end='', flush=True)
             self._check_movie(movie, config, program_config["email_to"])
 
         for n, show in enumerate(program_config["shows"]):
@@ -226,6 +231,7 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
                 time.sleep(2)
                 print("done")
 
+            print(f'{n + 1}/{len(program_config["shows"])}: ', end='', flush=True)
             self._check_show(show, config, program_config["email_to"])
 
         return 0
