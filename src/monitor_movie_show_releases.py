@@ -175,6 +175,24 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
 
         config.put_cached_movie(movie_id, movie_info)
 
+    def _check_show(self, show_id: int, config: Config, email_to: list[str]) -> None:
+        print(f"Checking show {show_id}... ", end='', flush=True)
+
+        show_info_cached = config.get_cached_show(show_id)
+        show_info = self._get_show_info(show_id)
+
+        changed, subject, body = self._format_show_change(show_info_cached, show_info)
+
+        if changed:
+            print("change")
+            assert self._sendmail is not None
+            for address in email_to:
+                self._sendmail.send(address, subject, body)
+        else:
+            print("no change")
+
+        config.put_cached_show(show_id, show_info)
+
     def run(self) -> int:
         """! Run the main logic.
         """
@@ -187,7 +205,7 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
             print(f"No TMDB API key in config file \"{config.get_program_config_path()}\"")
             return 1
 
-        if not program_config["movies"]:
+        if not program_config["movies"] and not program_config["shows"]:
             print("Nothing to do.")
 
         self._sendmail = SendMail(program_config["sendmail"], program_config["email_from"])
@@ -195,5 +213,7 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
 
         for movie in program_config["movies"]:
             self._check_movie(movie, config, program_config["email_to"])
+        for show in program_config["shows"]:
+            self._check_show(show, config, program_config["email_to"])
 
         return 0
