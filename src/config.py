@@ -38,6 +38,7 @@ class Config:
         self._config_file = self._config_path / "config.json"
 
         self._movies_path = self._config_path / "movies"
+        self._shows_path = self._config_path / "shows"
 
     def get_program_config(self) -> dict[Any, Any]:
         """! Return the global program configuration.
@@ -63,6 +64,8 @@ class Config:
             config["sendmail"] = "sendmail"
         if "movies" not in config or not config["movies"]:
             config["movies"] = []
+        if "shows" not in config or not config["shows"]:
+            config["shows"] = []
 
         return config
 
@@ -77,8 +80,14 @@ class Config:
     def _get_movie_file(self, movie_id: int) -> Path:
         return self._movies_path / (str(movie_id) + ".json")
 
+    def _get_show_file(self, show_id: int) -> Path:
+        return self._shows_path / (str(show_id) + ".json")
+
     def _create_movie_path(self) -> None:
         self._movies_path.mkdir(parents=True, exist_ok=True)
+
+    def _create_show_path(self) -> None:
+        self._shows_path.mkdir(parents=True, exist_ok=True)
 
     def get_cached_movie(self, movie_id: int) -> dict[Any, Any]:
         """! Return the cached information for a single movie.
@@ -107,3 +116,31 @@ class Config:
         movie_file = self._get_movie_file(movie_id)
         with open(movie_file, "w", encoding="utf-8") as f:
             json.dump(movie, f, ensure_ascii=False)
+
+    def get_cached_show(self, show_id: int) -> dict[Any, Any]:
+        """! Return the cached information for a single show.
+
+        @param show_id  ID of the show.
+
+        @return A dict with the cached show details.
+        """
+
+        show_file = self._get_show_file(show_id)
+        if not show_file.exists():
+            return {}
+
+        with open(show_file, 'rb') as f:
+            return json.load(f)
+
+    def put_cached_show(self, show_id: int, show: dict[Any, Any]) -> None:
+        """! Save the given show information into the cache.
+
+        @param show_id  ID of the show.
+        @param show     Movie information to cache.
+        """
+
+        self._create_show_path()
+
+        show_file = self._get_show_file(show_id)
+        with open(show_file, "w", encoding="utf-8") as f:
+            json.dump(show, f, ensure_ascii=False)
