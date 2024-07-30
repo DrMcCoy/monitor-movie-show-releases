@@ -95,3 +95,28 @@ class TMDB:  # pylint: disable=too-few-public-methods
 
         except requests.exceptions.HTTPError as error:
             raise RuntimeError(f"Failed to get movie: {error}") from error
+
+    def get_show(self, show_id: int, language: str | None = None) -> dict[Any, Any]:
+        """! Query TMDB for details about a show.
+
+        @param show_id   ID of the show on TMDB.
+        @param language  For which language to query.
+
+        @return A dict with details about the show.
+        """
+
+        try:
+            query_params: dict[Any, Any] | None = {}
+
+            assert query_params is not None
+            if language is not None:
+                query_params["language"] = language
+
+            if not query_params:
+                query_params = None
+
+            response = self._query("tv", path_params=[str(show_id)], query_params=query_params)
+            return response
+
+        except requests.exceptions.HTTPError as error:
+            raise RuntimeError(f"Failed to get show: {error}") from error
