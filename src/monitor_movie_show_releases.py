@@ -20,6 +20,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import time
 from enum import IntEnum
 from typing import Any
 
@@ -211,9 +212,20 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
         self._sendmail = SendMail(program_config["sendmail"], program_config["email_from"])
         self._tmdb = TMDB(program_config["tmdb"])
 
-        for movie in program_config["movies"]:
+        for n, movie in enumerate(program_config["movies"]):
+            if n % 10 == 0:
+                print("Waiting for a bit... ", end='', flush=True)
+                time.sleep(2)
+                print("done")
+
             self._check_movie(movie, config, program_config["email_to"])
-        for show in program_config["shows"]:
+
+        for n, show in enumerate(program_config["shows"]):
+            if n % 10 == 0:
+                print("Waiting for a bit... ", end='', flush=True)
+                time.sleep(2)
+                print("done")
+
             self._check_show(show, config, program_config["email_to"])
 
         return 0
