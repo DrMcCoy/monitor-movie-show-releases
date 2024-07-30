@@ -173,10 +173,10 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
             assert self._sendmail is not None
             for address in email_to:
                 self._sendmail.send(address, subject, body)
+
+            config.put_cached_movie(movie_id, movie_info)
         else:
             print("no change")
-
-        config.put_cached_movie(movie_id, movie_info)
 
     def _check_show(self, show_id: int, config: Config, email_to: list[str]) -> None:
         print(f"Checking show {show_id}... ", end='', flush=True)
@@ -193,10 +193,10 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
             assert self._sendmail is not None
             for address in email_to:
                 self._sendmail.send(address, subject, body)
+
+            config.put_cached_show(show_id, show_info)
         else:
             print("no change")
-
-        config.put_cached_show(show_id, show_info)
 
     def run(self) -> int:
         """! Run the main logic.
