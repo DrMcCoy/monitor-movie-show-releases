@@ -73,6 +73,36 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
         return True, subject, body
 
     @staticmethod
+    def _format_show_change(show_old: dict[Any, Any], show_new: dict[Any, Any]) -> tuple[bool, str, str]:
+        show_diff = list(dictdiffer.diff(show_old, show_new))
+        if not show_diff:
+            return False, "", ""
+
+        subject = f'Change in show "{show_new["title"]}" ({show_new["id"]})'
+
+        body = ''
+        body += f'Title: {show_new["title"]}\n'
+        body += f'Status: {show_new["status"]}\n\n'
+
+        next_episode = show_new["next_episode_to_air"]
+        if next_episode is not None:
+            episode = next_episode.get("episode_number", 0)
+            season = next_episode.get("season_number", 0)
+            name = next_episode.get("name", "")
+            episode_id = next_episode.get("id", 0)
+            date = next_episode.get("air_date", "")
+
+            body += f'Next to air: {season}x{episode:02} - {name} ({episode_id})  --  {date}\n'
+
+        body += '\n'
+        body += '------\n'
+        body += '\n'
+        for diff in show_diff:
+            body += str(diff)
+
+        return True, subject, body
+
+    @staticmethod
     def _describe_release_type(type_id: int) -> str:
         if type_id not in ReleaseType:
             return "Unknown"
@@ -114,6 +144,18 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
             movie_info["release_dates"] = self._filter_release_dates_by_country(movie, "DE")
 
         return movie_info
+
+    def _get_show_info(self, show_id: int) -> dict[Any, Any]:
+        assert self._tmdb is not None
+        show = self._tmdb.get_show(show_id)
+
+        show_info: dict[Any, Any] = {}
+
+        show_info["id"] = show_id
+        show_info["title"] = show.get("name", "")
+        show_info["status"] = show.get("status", "")
+        show_info["next_episode_to_air"] = show.get("next_episode_to_air", None)
+        return show_info
 
     def _check_movie(self, movie_id: int, config: Config, email_to: list[str]) -> None:
         print(f"Checking movie {movie_id}... ", end='', flush=True)
