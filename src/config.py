@@ -40,32 +40,57 @@ class Config:
         self._movies_path = self._config_path / "movies"
         self._shows_path = self._config_path / "shows"
 
+    @staticmethod
+    def _get_config_key(config: dict[Any, Any], key: str, default: Any):
+        if key not in config:
+            return default
+
+        value = config[key]
+        if value is None or not value:
+            return default
+
+        if isinstance(value, str):
+            if value.strip() == "":
+                return default
+
+        return value
+
     def get_program_config(self) -> dict[Any, Any]:
         """! Return the global program configuration.
 
         @return A dict containing the global program configuration.
         """
 
-        config = {}
+        config: dict[Any, Any] = {
+            "tmdb": None,
+            "email": {
+                "host": "localhost",
+                "port": 25,
+                "from": "monitor_movie_show_releases <monitor_movie_show_releases@localhost>",
+                "to": []
+            },
+            "movies": [],
+            "shows": []
+        }
 
-        if self._config_file.exists():
-            with open(self._config_file, 'rb') as f:
-                config = json.load(f)
+        if not self._config_file.exists():
+            return config
 
-        if "tmdb" not in config or config["tmdb"] is None or config["tmdb"].strip() == "":
-            config["tmdb"] = None
-        if "email_from" not in config or not config["email_from"] or config["email_from"].strip() == "":
-            config["email_from"] = "monitor_movie_show_releases"
-        if "email_to" not in config or not config["email_to"] or config["email_to"].strip() == "":
-            config["email_to"] = []
-        if isinstance(config["email_to"], str):
-            config["email_to"] = [config["email_to"]]
-        if "sendmail" not in config or not config["sendmail"] or config["sendmail"].strip() == "":
-            config["sendmail"] = "sendmail"
-        if "movies" not in config or not config["movies"]:
-            config["movies"] = []
-        if "shows" not in config or not config["shows"]:
-            config["shows"] = []
+        with open(self._config_file, 'rb') as f:
+            saved_config = json.load(f)
+
+        config["tmdb"] = self._get_config_key(saved_config, "tmdb", config["tmdb"])
+        config["movies"] = self._get_config_key(saved_config, "movies", config["movies"])
+        config["shows"] = self._get_config_key(saved_config, "shows", config["shows"])
+
+        if "email" in saved_config:
+            config["email"]["host"] = self._get_config_key(saved_config["email"], "host", config["email"]["host"])
+            config["email"]["port"] = self._get_config_key(saved_config["email"], "port", config["email"]["port"])
+            config["email"]["from"] = self._get_config_key(saved_config["email"], "from", config["email"]["from"])
+            config["email"]["to"] = self._get_config_key(saved_config["email"], "to", config["email"]["to"])
+
+        if isinstance(config["email"]["to"], str):
+            config["email"]["to"] = [config["email"]["to"]]
 
         return config
 

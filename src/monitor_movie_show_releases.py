@@ -213,7 +213,9 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
         if not program_config["movies"] and not program_config["shows"]:
             print("Nothing to do.")
 
-        self._sendmail = SendMail(program_config["sendmail"], program_config["email_from"])
+        self._sendmail = SendMail(program_config["email"]["host"],
+                                  program_config["email"]["port"],
+                                  program_config["email"]["from"])
         self._tmdb = TMDB(program_config["tmdb"])
 
         for n, movie in enumerate(program_config["movies"]):
@@ -223,7 +225,7 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
                 print("done")
 
             print(f'{n + 1}/{len(program_config["movies"])}: ', end='', flush=True)
-            self._check_movie(movie, config, program_config["email_to"])
+            self._check_movie(movie, config, program_config["email"]["to"])
 
         for n, show in enumerate(program_config["shows"]):
             if n % 10 == 0:
@@ -232,6 +234,6 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
                 print("done")
 
             print(f'{n + 1}/{len(program_config["shows"])}: ', end='', flush=True)
-            self._check_show(show, config, program_config["email_to"])
+            self._check_show(show, config, program_config["email"]["to"])
 
         return 0

@@ -20,30 +20,32 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import subprocess
 from email.message import EmailMessage
+from smtplib import SMTP
 
 
 class SendMail:  # pylint: disable=too-few-public-methods
     """! Sending email.
     """
 
-    def __init__(self, sendmail: str, email_from: str) -> None:
-        self._sendmail = sendmail
-        self._email_from = email_from
+    def __init__(self, host: str, port: int, sender: str) -> None:
+        self._host = host
+        self._port = port
+        self._sender = sender
 
-    def send(self, email_to: str, subject: str, body: str) -> None:
+    def send(self, receiver: str, subject: str, body: str) -> None:
         """! Send an email.
 
-        @param email_to  The address to which to send the email to.
+        @param receiver  The address to which to send the email to.
         @param subject   The email subject.
         @param body      The email body.
         """
 
         msg = EmailMessage()
         msg.set_content(body)
-        msg['From'] = self._email_from
-        msg['To'] = email_to
+        msg['From'] = self._sender
+        msg['To'] = receiver
         msg['Subject'] = subject
 
-        subprocess.run([self._sendmail, "-t", "-oi"], input=msg.as_bytes(), check=True)
+        with SMTP(host=self._host, port=self._port) as smtp:
+            smtp.send_message(msg)
