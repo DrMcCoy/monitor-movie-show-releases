@@ -1,3 +1,7 @@
+Saturday, 2024-08-03 (Version 1.1.0)
+	- Added TMDB URLs to change emails
+	- Changed JSON cache to be written indented
+
 Wednesday, 2024-07-31 (Version 1.0.0)
 	- Implemented sending emails on TMDB response changes
 	- Implemented querying TMDB for shows and caching them
