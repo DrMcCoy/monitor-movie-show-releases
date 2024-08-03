@@ -60,6 +60,7 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
         subject = f'Change in movie "{movie_new["title"]}" ({movie_new["id"]})'
 
         body = ''
+        body = f'https://www.themoviedb.org/movie/{movie_new["id"]}\n\n'
         body += f'Title: {movie_new["title"]}\n'
         body += f'Status: {movie_new["status"]}\n\n'
         for release in movie_new["release_dates"]:
@@ -82,6 +83,7 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
         subject = f'Change in show "{show_new["title"]}" ({show_new["id"]})'
 
         body = ''
+        body = f'https://www.themoviedb.org/tv/{show_new["id"]}\n\n'
         body += f'Title: {show_new["title"]}\n'
         body += f'Status: {show_new["status"]}\n\n'
 
