@@ -20,6 +20,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import difflib
+import json
 import time
 from enum import IntEnum
 from typing import Any
@@ -52,6 +54,23 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
         self._sendmail: SendMail | None = None
 
     @staticmethod
+    def _format_unified_dict_diff(old: dict[Any, Any], new: dict[Any, Any], tmdb_id: int) -> str:
+        str_old = json.dumps(old, indent=4)
+        str_new = json.dumps(new, indent=4)
+
+        return '\n'.join(difflib.unified_diff(str_old.splitlines(), str_new.splitlines(),
+                                              fromfile=f'{tmdb_id}.json.old', tofile=f'{tmdb_id}.json.new',
+                                              lineterm='')) + '\n'
+
+    @staticmethod
+    def _format_dict_diff(diff: list[Any]) -> str:
+        formatted = ''
+        for change in diff:
+            formatted += str(change) + '\n'
+
+        return formatted
+
+    @staticmethod
     def _format_movie_change(movie_old: dict[Any, Any], movie_new: dict[Any, Any]) -> tuple[bool, str, str]:
         movie_diff = list(dictdiffer.diff(movie_old, movie_new))
         if not movie_diff:
@@ -66,11 +85,10 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
         for release in movie_new["release_dates"]:
             body += f'Release({release["type"]}, {release["iso_639_1"]}): {release["release_date"]}\n'
 
-        body += '\n'
-        body += '------\n'
-        body += '\n'
-        for diff in movie_diff:
-            body += str(diff)
+        body += '\n------\n\n'
+        body += MonitorMovieShowReleases._format_unified_dict_diff(movie_old, movie_new, movie_new["id"])
+        body += '\n------\n\n'
+        body += MonitorMovieShowReleases._format_dict_diff(movie_diff)
 
         return True, subject, body
 
@@ -97,11 +115,10 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
 
             body += f'Next to air: {season}x{episode:02} - {name} ({episode_id})  --  {date}\n'
 
-        body += '\n'
-        body += '------\n'
-        body += '\n'
-        for diff in show_diff:
-            body += str(diff)
+        body += '\n------\n\n'
+        body += MonitorMovieShowReleases._format_unified_dict_diff(show_old, show_new, show_new["id"])
+        body += '\n------\n\n'
+        body += MonitorMovieShowReleases._format_dict_diff(show_diff)
 
         return True, subject, body
 
