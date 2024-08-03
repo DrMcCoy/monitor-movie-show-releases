@@ -140,7 +140,7 @@ class Config:
 
         movie_file = self._get_movie_file(movie_id)
         with open(movie_file, "w", encoding="utf-8") as f:
-            json.dump(movie, f, ensure_ascii=False)
+            json.dump(movie, f, ensure_ascii=False, indent=4)
 
     def get_cached_show(self, show_id: int) -> dict[Any, Any]:
         """! Return the cached information for a single show.
@@ -168,4 +168,4 @@ class Config:
 
         show_file = self._get_show_file(show_id)
         with open(show_file, "w", encoding="utf-8") as f:
-            json.dump(show, f, ensure_ascii=False)
+            json.dump(show, f, ensure_ascii=False, indent=4)
