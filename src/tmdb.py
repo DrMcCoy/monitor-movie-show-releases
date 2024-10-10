@@ -23,6 +23,7 @@
 from typing import Any
 
 import requests
+from requests.adapters import HTTPAdapter, Retry
 
 
 class TMDB:  # pylint: disable=too-few-public-methods
@@ -51,7 +52,12 @@ class TMDB:  # pylint: disable=too-few-public-methods
             "Authorization": f"Bearer {self._bearer}"
         }
 
-        response = requests.get(url, timeout=5, headers=headers)
+        session = requests.Session()
+        retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+        session.mount('http://', HTTPAdapter(max_retries=retries))
+        session.mount('https://', HTTPAdapter(max_retries=retries))
+
+        response = session.get(url, timeout=5, headers=headers)
         response.raise_for_status()
 
         return response.json()
