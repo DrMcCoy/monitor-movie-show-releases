@@ -1,3 +1,6 @@
+Saturday, 2024-12-07 (Version 1.2.1)
+	- Changed TMDB API class to allow empty replies on authentication calls
+
 Friday, 2024-10-11 (Version 1.2.0)
 	- Added textual unified diff to change emails
 	- Implemented connection retries with a backoff strategy
