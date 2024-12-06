@@ -60,6 +60,9 @@ class TMDB:  # pylint: disable=too-few-public-methods
         response = session.get(url, timeout=5, headers=headers)
         response.raise_for_status()
 
+        if response.text == "":
+            return {}
+
         return response.json()
 
     def _try_auth(self) -> None:
@@ -67,9 +70,7 @@ class TMDB:  # pylint: disable=too-few-public-methods
 
         try:
             response = self._query("authentication")
-            if "success" not in response:
-                raise RuntimeError("Response has no success value")
-            if not response["success"]:
+            if "success" in response and not response["success"]:
                 raise RuntimeError("Response yielded no success")
         except (requests.exceptions.HTTPError, RuntimeError) as error:
             raise RuntimeError(f"Failed to authenticate with TMDB: {error}") from error
