@@ -23,7 +23,7 @@
 import re
 import subprocess
 
-VERSION_FALLBACK = "1.2.1+unk"
+VERSION_FALLBACK = "1.3.0+unk"
 
 
 def get_version() -> str:
