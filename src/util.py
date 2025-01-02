@@ -25,7 +25,7 @@ from importlib import metadata
 from typing import Any
 
 PACKAGE_NAME = "monitor-movie-show-releases"
-COPYRIGHT_YEARS = "2024"
+COPYRIGHT_YEARS = "2024-2025"
 
 
 class Util:  # pylint: disable=too-few-public-methods
