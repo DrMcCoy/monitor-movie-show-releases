@@ -84,6 +84,7 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
         body = ''
         body = f'https://www.themoviedb.org/movie/{movie_new["id"]}\n\n'
         body += f'Title: {movie_new["title"]}\n'
+        body += f'Original Title: {movie_new["original_title"]}\n'
         body += f'Status: {movie_new["status"]}\n\n'
         for release in movie_new["release_dates"]:
             body += f'Release({release["type"]}, {release["iso_639_1"]}): {release["release_date"]}\n'
@@ -106,6 +107,7 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
         body = ''
         body = f'https://www.themoviedb.org/tv/{show_new["id"]}\n\n'
         body += f'Title: {show_new["title"]}\n'
+        body += f'Original Title: {show_new["original_title"]}\n'
         body += f'Status: {show_new["status"]}\n\n'
 
         next_episode = show_new["next_episode_to_air"]
@@ -156,6 +158,7 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
 
         movie_info["id"] = movie_id
         movie_info["title"] = movie.get("title", "")
+        movie_info["original_title"] = movie.get("original_title", movie_info["title"])
         movie_info["status"] = movie.get("status", "")
         movie_info["release_dates"] = []
 
@@ -176,6 +179,7 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
 
         show_info["id"] = show_id
         show_info["title"] = show.get("name", "")
+        show_info["original_title"] = show.get("original_name", show_info["title"])
         show_info["status"] = show.get("status", "")
         show_info["next_episode_to_air"] = show.get("next_episode_to_air", None)
         return show_info
