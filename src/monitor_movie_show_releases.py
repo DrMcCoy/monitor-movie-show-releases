@@ -20,6 +20,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import argparse
 import difflib
 import json
 import time
@@ -49,7 +50,9 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
     """! Monitor Movie and Show Releases logic.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, args: argparse.Namespace) -> None:
+        self._args = args
+
         self._tmdb: TMDB | None = None
         self._sendmail: SendMail | None = None
 
@@ -189,11 +192,13 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
 
         if changed:
             print("change")
-            assert self._sendmail is not None
-            for address in email_to:
-                self._sendmail.send(address, subject, body)
+            if not self._args.skip_mails:
+                assert self._sendmail is not None
+                for address in email_to:
+                    self._sendmail.send(address, subject, body)
 
-            config.put_cached_movie(movie_id, movie_info)
+            if not self._args.skip_cache:
+                config.put_cached_movie(movie_id, movie_info)
         else:
             print("no change")
 
@@ -209,11 +214,13 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
 
         if changed:
             print("change")
-            assert self._sendmail is not None
-            for address in email_to:
-                self._sendmail.send(address, subject, body)
+            if not self._args.skip_mails:
+                assert self._sendmail is not None
+                for address in email_to:
+                    self._sendmail.send(address, subject, body)
 
-            config.put_cached_show(show_id, show_info)
+            if not self._args.skip_cache:
+                config.put_cached_show(show_id, show_info)
         else:
             print("no change")
 
@@ -237,22 +244,24 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
                                   program_config["email"]["from"])
         self._tmdb = TMDB(program_config["tmdb"])
 
-        for n, movie in enumerate(program_config["movies"]):
-            if n % 10 == 0:
-                print("Waiting for a bit... ", end='', flush=True)
-                time.sleep(2)
-                print("done")
+        if not self._args.skip_movies:
+            for n, movie in enumerate(program_config["movies"]):
+                if n % 10 == 0:
+                    print("Waiting for a bit... ", end='', flush=True)
+                    time.sleep(2)
+                    print("done")
 
-            print(f'{n + 1}/{len(program_config["movies"])}: ', end='', flush=True)
-            self._check_movie(movie, config, program_config["email"]["to"])
+                print(f'{n + 1}/{len(program_config["movies"])}: ', end='', flush=True)
+                self._check_movie(movie, config, program_config["email"]["to"])
 
-        for n, show in enumerate(program_config["shows"]):
-            if n % 10 == 0:
-                print("Waiting for a bit... ", end='', flush=True)
-                time.sleep(2)
-                print("done")
+        if not self._args.skip_shows:
+            for n, show in enumerate(program_config["shows"]):
+                if n % 10 == 0:
+                    print("Waiting for a bit... ", end='', flush=True)
+                    time.sleep(2)
+                    print("done")
 
-            print(f'{n + 1}/{len(program_config["shows"])}: ', end='', flush=True)
-            self._check_show(show, config, program_config["email"]["to"])
+                print(f'{n + 1}/{len(program_config["shows"])}: ', end='', flush=True)
+                self._check_show(show, config, program_config["email"]["to"])
 
         return 0

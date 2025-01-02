@@ -66,6 +66,15 @@ class Main:  # pylint: disable=too-few-public-methods
         parser.add_argument("-v", "--version", required=False, action="store_true",
                             help="Print the version and exit")
 
+        parser.add_argument('-m', '--skip-movies', required=False, action='store_true',
+                            help="Don't check movies")
+        parser.add_argument('-s', '--skip-shows', required=False, action='store_true',
+                            help="Don't check TV shows")
+        parser.add_argument('-e', '--skip-mails', required=False, action='store_true',
+                            help="Don't send mail")
+        parser.add_argument('-c', '--skip-cache', required=False, action='store_true',
+                            help="Don't update the cache")
+
         args: argparse.Namespace = parser.parse_args()
 
         if args.version:
@@ -77,9 +86,9 @@ class Main:  # pylint: disable=too-few-public-methods
     def run(self) -> int:
         """! Run the main Monitor Movie and Show Releases application.
         """
-        Main._parse_args()
+        args: argparse.Namespace = Main._parse_args()
 
-        monitor_movie_show_releases: MonitorMovieShowReleases = MonitorMovieShowReleases()
+        monitor_movie_show_releases: MonitorMovieShowReleases = MonitorMovieShowReleases(args)
         return monitor_movie_show_releases.run()
 
 
