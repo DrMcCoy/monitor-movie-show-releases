@@ -128,6 +128,26 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
         return True, subject, body
 
     @staticmethod
+    def _format_show_error(show_id: int, error: Exception) -> tuple[str, str]:
+        subject = f'Error in show {show_id}'
+
+        body = ''
+        body = f'https://www.themoviedb.org/tv/{show_id}\n\n'
+        body += f'{error}'
+
+        return subject, body
+
+    @staticmethod
+    def _format_movie_error(movie_id: int, error: Exception) -> tuple[str, str]:
+        subject = f'Error in movie {movie_id}'
+
+        body = ''
+        body = f'https://www.themoviedb.org/movie/{movie_id}\n\n'
+        body += f'{error}'
+
+        return subject, body
+
+    @staticmethod
     def _describe_release_type(type_id: int) -> str:
         if type_id not in ReleaseType:
             return "Unknown"
@@ -188,7 +208,17 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
         print(f"Checking movie {movie_id}... ", end='', flush=True)
 
         movie_info_cached = config.get_cached_movie(movie_id)
-        movie_info = self._get_movie_info(movie_id)
+
+        try:
+            movie_info = self._get_movie_info(movie_id)
+        except RuntimeError as error:
+            print("ERROR")
+            if not self._args.skip_mails:
+                assert self._sendmail is not None
+                subject, body = self._format_movie_error(movie_id, error)
+                for address in email_to:
+                    self._sendmail.send(address, subject, body)
+            return
 
         print(f'"{movie_info["title"]}"... ', end='', flush=True)
 
@@ -210,7 +240,17 @@ class MonitorMovieShowReleases:  # pylint: disable=too-few-public-methods
         print(f"Checking show {show_id}... ", end='', flush=True)
 
         show_info_cached = config.get_cached_show(show_id)
-        show_info = self._get_show_info(show_id)
+
+        try:
+            show_info = self._get_show_info(show_id)
+        except RuntimeError as error:
+            print("ERROR")
+            if not self._args.skip_mails:
+                assert self._sendmail is not None
+                subject, body = self._format_show_error(show_id, error)
+                for address in email_to:
+                    self._sendmail.send(address, subject, body)
+            return
 
         print(f'"{show_info["title"]}"... ', end='', flush=True)
 
